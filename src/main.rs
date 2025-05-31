@@ -82,6 +82,9 @@ fn main() {
                     println!("ArcWelder feature is enabled.");
                 } else {
                     println!("ArcWelder feature is NOT enabled.");
+                    if arcwelder {
+                        panic!("You requested arcwelder but the feature is not enabled!");
+                    }
                 }
 
                 #[cfg(feature = "arcwelder")]

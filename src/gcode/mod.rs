@@ -61,7 +61,7 @@ impl GcodeWriter {
     }
     pub fn write_perimeter(
         &mut self,
-        x: f32, y: f32, z: f32, s:f32,
+        x: f32, y: f32, s:f32,
         extrusion: f32
     ) -> () {
         self.write_gcode(

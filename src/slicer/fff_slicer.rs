@@ -1,6 +1,6 @@
 use crate::gcode::GcodeWriter;
-use crate::geometry::{Edges, STLMesh};
-use crate::settings::{FloatOrVecOfFloats, Settings};
+use crate::geometry::STLMesh;
+use crate::settings::Settings;
 use crate::slicer::Slicer;
 
 pub struct FFFSlicer {
@@ -20,15 +20,11 @@ impl FFFSlicer {
     }
 
     pub fn perimeters(&self, stl: &STLMesh, gcode_writer: &mut GcodeWriter, z: f32) -> () {
-        let tol = 1e-6 as f32;
         let tris = stl.triangles();
-        let perimeter_edges = Edges::new();
         
 
         // counter to track the index of the triangles that intersect with each z layer
         let mut counter = 0;
-        // save the number of triangles per layer
-        let mut num_triangles = 0;
         // temprorary vector that stores the intersecting triangle indices
         let mut vec = vec![];
         // vector containing the intersection coordinates between the 
@@ -42,8 +38,6 @@ impl FFFSlicer {
             let vert_1 = tri[0];
             let vert_2 = tri[1];
             let vert_3 = tri[2];
-
-            
 
             // if any of the vertices are above AND any are below, 
             if vert_1[2] < z || vert_2[2] < z || vert_3[2] < z {
@@ -63,10 +57,10 @@ impl FFFSlicer {
                     let z_vec = [vert_1[2], vert_2[2], vert_3[2]];
                     // empty vector for sorting
                     let mut z_sort = vec![];
-                    for zS in z_vec {
-                        if zS - z < 0.0 {
+                    for z_s in z_vec {
+                        if z_s - z < 0.0 {
                             z_sort.push(-1);
-                        } else if zS - z > 0.0 {
+                        } else if z_s - z > 0.0 {
                             z_sort.push(1);
                         } else {
                             z_sort.push(0);
@@ -161,30 +155,23 @@ impl FFFSlicer {
         
         println!("Global Layer height; {:?}", z);
         println!("Number of triangles in Layer: {:?}", vec.len());
-        // println!("Sample AB-Coords: {:?}",ab_coords[0]);
-        // println!("Going Crazy: {:?}", ab_coords);
-        // Testing to sort the perimeter lines (ab)
-        let TEST = 1;
-        // if TEST == 1 { //16.5 {
-
-        // println!("All AB-Coords: {:?}", ab_coords);
         
         // perimeter array of the sorted line segments
         let mut perimeter_sort = Vec::new();
         // Clone the vector of all line segments, we 
         // will be removing all used segments
-        let mut AB_COORDS = Vec::from(ab_coords.clone());
+        let mut ab_coords = Vec::from(ab_coords.clone());
         // push the first line segment to the sorted
         // list, the exact place to start will need 
         // to be adjusted in the future.
-        if AB_COORDS.len() > 0 {
-            perimeter_sort.push(AB_COORDS[0]);           
+        if ab_coords.len() > 0 {
+            perimeter_sort.push(ab_coords[0]);           
             // remove the first line segment
-            AB_COORDS.swap_remove(0);
+            ab_coords.swap_remove(0);
             // create a counter variable
-            let mut num_available_segs = AB_COORDS.len();
+            let mut num_available_segs = ab_coords.len();
 
-            // cycle through all line segments in AB_COORDS; if x_a and y_a of
+            // cycle through all line segments in ab_coords; if x_a and y_a of
             // a line segment matches the x_b and y_b of the last segment in 
             // perimeter_sort, then push that line segment to perimeter_sort. 
             //
@@ -197,7 +184,7 @@ impl FFFSlicer {
             // above some number, keep building the connected
             // lines
             while num_available_segs > 0 {
-                // index counter, for the triangle in AB_COORDS
+                // index counter, for the triangle in ab_coords
                 let mut index_count = 0;
                 // vector to save the matcing indices. This 
                 // needs to be a vector because there is a 
@@ -216,17 +203,17 @@ impl FFFSlicer {
                 // TODO THIS IS WRONG, it needs to look at 
                 // both points in each line segment, since
                 // the order of a and b is arbitrary. Oof.
-                for segs in AB_COORDS.iter() {
-                    // println!("Segments: {:?}", AB_COORDS);
+                for segs in ab_coords.iter() {
+                    // println!("Segments: {:?}", ab_coords);
                     // println!("Last Segment: {:?}",perimeter_sort.last().expect("Perimeter is empty"));
                     
                     // find the distance between the last coordinate in perimeter_sort
                     // and the current line segment, vertex a
-                    let mut x_diff_a = (segs[0][0] - perimeter_sort.last().expect("Perimeter is empty")[1][0]).abs();
-                    let mut y_diff_a = (segs[0][1] - perimeter_sort.last().expect("Perimeter is empty")[1][1]).abs();
+                    let x_diff_a = (segs[0][0] - perimeter_sort.last().expect("Perimeter is empty")[1][0]).abs();
+                    let y_diff_a = (segs[0][1] - perimeter_sort.last().expect("Perimeter is empty")[1][1]).abs();
                     // ... same as above, but with vertex b
-                    let mut x_diff_b = (segs[1][0] - perimeter_sort.last().expect("Perimeter is empty")[1][0]).abs();
-                    let mut y_diff_b = (segs[1][1] - perimeter_sort.last().expect("Perimeter is empty")[1][1]).abs();
+                    let x_diff_b = (segs[1][0] - perimeter_sort.last().expect("Perimeter is empty")[1][0]).abs();
+                    let y_diff_b = (segs[1][1] - perimeter_sort.last().expect("Perimeter is empty")[1][1]).abs();
                     
                     // square the difference values
                     let x_diff_a_square = x_diff_a.powi(2);
@@ -259,8 +246,8 @@ impl FFFSlicer {
                     // euclidean value and a 0 or 1 for which is 
                     // closer (this is for rearranging outside this
                     // loop).
-                    let mut which_vertex: f32;
-                    let mut smaller_euclidean: f32;
+                    let which_vertex: f32;
+                    let smaller_euclidean: f32;
                     if euclidean_a > euclidean_b {
                         smaller_euclidean = euclidean_b;
                         which_vertex = 1.0;
@@ -310,18 +297,18 @@ impl FFFSlicer {
                 // println!("INDEXES: {:?}",index_match);
                 // println!("----------------------------------");
                 if index_match.len() == 1 {
-                    perimeter_sort.push(AB_COORDS[index_match[0]]);
+                    perimeter_sort.push(ab_coords[index_match[0]]);
                     // println!("Size of index match: {:?}",index_match.len());
-                    // AB_COORDS.swap_remove(index_count);
+                    // ab_coords.swap_remove(index_count);
                     // println!("Test index match: {:?}", index_match);
-                    // println!("Size of AB_COUNT: {:?}",AB_COORDS.len());
+                    // println!("Size of AB_COUNT: {:?}",ab_coords.len());
                     // println!("Sorted Segments: {:?}",perimeter_sort);
                     num_available_segs -= 1;
-                    let REMOVE = *index_match.last().expect("Nothing in the perimeter");
-                    AB_COORDS.swap_remove(REMOVE);
-                    // println!("Size of AB_COUNT: {:?}",AB_COORDS.len());
+                    let remove = *index_match.last().expect("Nothing in the perimeter");
+                    ab_coords.swap_remove(remove);
+                    // println!("Size of AB_COUNT: {:?}",ab_coords.len());
                     search_radius = 1e-3;
-                    gcode_writer.write_perimeter(perimeter_sort.last().unwrap()[1][0],perimeter_sort.last().unwrap()[1][1],z,555.0,1200.0);
+                    gcode_writer.write_perimeter(perimeter_sort.last().unwrap()[1][0], perimeter_sort.last().unwrap()[1][1], 555.0, 1200.0);
                 } else if index_match.len() > 1 {
                     search_radius = search_radius * 0.9;
                 } else {

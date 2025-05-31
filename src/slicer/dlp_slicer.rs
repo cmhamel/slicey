@@ -21,23 +21,11 @@ impl DLPSlicer {
     }
 
     fn layer_image(&self, grid: &Vec::<[f32; 2]>, z: f32) {
-        // arbitrary ray in +x direction
-        // let ray_direction = nalgebra::Vector3::<f32>::new(1., 0., 0.);
-        // count number of triangles that intersect ray
-        // let mut count = 0;
-        // for tri in self.stl_mesh.triangles() {
-        //     // let tri_pts = [
-        //     //     vertices[tri.vertices[0]],
-        //     //     vertices[tri.vertices[1]],
-        //     //     vertices[tri.vertices[2]]
-        //     // ]
-        //     // println!("Tri = {:?}", tri);
-        //     for point in grid {
-
-        //     }
-        // }
-        for point in grid {
-            
+        let mut image = Vec::<bool>::new();
+        for (n, point) in grid.into_iter().enumerate() {
+            println!("Checking point {}/{}", n, grid.len());
+            let p = nalgebra::Point3::<f32>::new(point[0], point[1], z);
+            let _ = image.push(self.stl_mesh.is_inside(&p));
         }
     }
 
