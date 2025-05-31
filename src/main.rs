@@ -56,8 +56,10 @@ fn main() {
         Some(x) => match x {
             Commands::DLP { stl_file, settings_file, image_folder } => {
                 let settings = Settings::new(&settings_file);
-                let stl_mesh = STLMesh::new(stl_file);
-                let slicer = DLPSlicer::new(settings, stl_mesh);
+                let mut stl_mesh = STLMesh::new(stl_file);
+                stl_mesh.center_xy();
+                let mut slicer = DLPSlicer::new(settings, stl_mesh);
+                // slicer.center(slicer.settings, slicer.stl_mesh);
                 let _ = slicer.slice(&image_folder);
             },
             Commands::FFF { gcode_file, stl_files, settings_file, arcwelder } => {

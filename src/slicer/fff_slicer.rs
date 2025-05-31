@@ -256,28 +256,10 @@ impl FFFSlicer {
                         which_vertex = 0.0;
                     }
 
-                    
                     // let smaller_euclidean = euclidean_a;
                     let euclidean = smaller_euclidean;
-                    // println!("euclidean A: {:?}",euclidean_a);
-                    // println!("euclidean B: {:?}",euclidean_b);
-                    // println!("euclidean  : {:?}", euclidean);
-                    // println!("Search Radius: {:?}", search_radius);
                     if euclidean <= search_radius  {
                         // if y_diff <= search_radius {
-                        // println!("--------------------------------------");
-                        // println!("Match Found");
-                        // println!("euclindean A: {:?}",euclidean_b);
-                        // println!("euclindean B: {:?}",euclidean_b);
-                        // println!("euclindean B: {:?}",euclidean_b);
-                        // println!("Segment: {:?}", segs);
-                        // println!("Segment X: {:?}, Segment Y: {:?}", segs[0][0], segs[0][1]);
-                        // println!("Last Perimeter Segment: {:?}", perimeter_sort.last().expect("Perimeter is empty")[1]);
-                        // println!("Searched X: {:?}, Searched Y: {:?}", perimeter_sort.last().expect("Perimeter is empty")[1][0], perimeter_sort.last().expect("Perimeter is empty")[1][1]);
-                        // println!("X diff: {:?}",x_diff);
-                        // println!("Y diff: {:?}",y_diff);
-                        // println!("Euclidean: {:?}",euclidean);
-                        // println!("Search Radius: {:?}", search_radius);
                         // perimeter_sort.push(*segs);
                         index_match.push(index_count);
                         vertex_switch.push(which_vertex);
@@ -293,20 +275,11 @@ impl FFFSlicer {
                 // the search. If none are found, grow the search radus, and
                 // repeat the search. (Hopefully).
                 //
-                // println!("NUM INDEXES: {:?}",index_match.len());
-                // println!("INDEXES: {:?}",index_match);
-                // println!("----------------------------------");
                 if index_match.len() == 1 {
                     perimeter_sort.push(ab_coords[index_match[0]]);
-                    // println!("Size of index match: {:?}",index_match.len());
-                    // ab_coords.swap_remove(index_count);
-                    // println!("Test index match: {:?}", index_match);
-                    // println!("Size of AB_COUNT: {:?}",ab_coords.len());
-                    // println!("Sorted Segments: {:?}",perimeter_sort);
                     num_available_segs -= 1;
                     let remove = *index_match.last().expect("Nothing in the perimeter");
                     ab_coords.swap_remove(remove);
-                    // println!("Size of AB_COUNT: {:?}",ab_coords.len());
                     search_radius = 1e-3;
                     gcode_writer.write_perimeter(perimeter_sort.last().unwrap()[1][0], perimeter_sort.last().unwrap()[1][1], 555.0, 1200.0);
                 } else if index_match.len() > 1 {
@@ -315,13 +288,8 @@ impl FFFSlicer {
                     search_radius = search_radius * 1.1;
                 }
                 
-            }
-            // println!("Sorted Segments: {:?}",perimeter_sort);
-            
+            }            
             println!("----------------------------------");
-
-
-            
         }
         
         // Sort the ab_coords per layer to produce the perimeter
@@ -329,8 +297,6 @@ impl FFFSlicer {
         // Must remove used coord pairs from available list in
         // order to check if multiple print "islands" occure per
         // layer.
-        
-
     }
 }
 
